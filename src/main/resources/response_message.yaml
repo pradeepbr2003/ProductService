@@ -1,0 +1,4 @@
+product:
+  deletedMessage: "%n Successfully deleted product %s"
+  notFound: "%n Product %s not found %n"
+  noSuch: "No such products found"

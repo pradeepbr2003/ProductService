@@ -1,5 +1,6 @@
 package com.accenture.product.service;
 
+import com.accenture.product.config.ProductResponseMsgConfig;
 import com.accenture.product.dto.InventoryDTO;
 import com.accenture.product.dto.ProductDTO;
 import com.accenture.product.entity.Product;
@@ -27,6 +28,9 @@ public class ProductService {
     @Autowired
     private ProductUtil productUtil;
 
+    @Autowired
+    private ProductResponseMsgConfig prodSvcMessage;
+
     public List<ProductDTO> saveProducts(List<Product> products) {
         List<ProductDTO> prods = prodRepository.saveAll(products).stream().map(productUtil::convertDTO).toList();
         loadInventories(prods);
@@ -35,7 +39,7 @@ public class ProductService {
 
     public ProductDTO saveProduct(Product product) {
         ProductDTO productDto = productUtil.convertDTO(prodRepository.save(product));
-        loadInventory(productDto);
+        loadInventories(List.of(productDto));
         return productDto;
     }
 
@@ -52,36 +56,30 @@ public class ProductService {
         productRemoteService.invokePostInventoryService(inventories);
     }
 
-    private void loadInventory(ProductDTO product) {
-        LOG.info("Invoking loadInventory method.....");
-        InventoryDTO inventory = productUtil.loadInventory(product);
-        LOG.info("loadInventory method : inventory :  {}", inventory);
-        productRemoteService.invokePostInventoryService(List.of(inventory));
-    }
-
     public List<ProductDTO> getProducts() {
         return prodRepository.findAll().stream().map(productUtil::convertDTO).toList();
     }
 
     public ProductDTO getProduct(String code) {
-        Product product = prodRepository.findById(code).orElseThrow(() -> new RuntimeException(String.format("%n Product %d not found %n", code)));
+        Product product = prodRepository.findById(code)
+                .orElseThrow(() -> new RuntimeException(prodSvcMessage.productNotFound(code)));
         return productUtil.convertDTO(product);
     }
 
     public String removeProduct(String code) {
-        Product product = prodRepository.findById(code).orElseThrow(() -> new RuntimeException(String.format("Product with code %d not found", code)));
+        Product product = prodRepository.findById(code).orElseThrow(() -> new RuntimeException(prodSvcMessage.productNotFound(code)));
         prodRepository.delete(product);
-        return String.format("%n Successfully deleted product %s", product.getName());
+        return prodSvcMessage.productDeleted(product.getName());
     }
 
     public ProductDTO updateProduct(String code, Double price) {
-        Product product = prodRepository.findById(code).orElseThrow(() -> new RuntimeException(String.format("Product with code %d not found", code)));
+        Product product = prodRepository.findById(code).orElseThrow(() -> new RuntimeException(prodSvcMessage.productNotFound(code)));
         product.setPrice(price);
         return productUtil.convertDTO(prodRepository.save(product));
     }
 
     public ProductDTO findProductByName(String name) {
-        Product product = prodRepository.findByName(name).orElseThrow(() -> new RuntimeException("No such products found"));
+        Product product = prodRepository.findByName(name).orElseThrow(() -> new RuntimeException(prodSvcMessage.getNoSuch()));
         return productUtil.convertDTO(product);
     }
 }
