@@ -53,6 +53,7 @@ public class ProductService {
         LOG.info("Invoking loadInventories method.....");
         List<InventoryDTO> inventories = products.stream().map(productUtil::loadInventory).collect(Collectors.toList());
         LOG.info("loadInventories method : inventories : {}", inventories);
+        productRemoteService.invokeDeleteInventoryService();
         productRemoteService.invokePostInventoryService(inventories);
     }
 
@@ -67,9 +68,17 @@ public class ProductService {
     }
 
     public String removeProduct(String code) {
-        Product product = prodRepository.findById(code).orElseThrow(() -> new RuntimeException(prodSvcMessage.productNotFound(code)));
-        prodRepository.delete(product);
-        return prodSvcMessage.productDeleted(product.getName());
+        LOG.info("Invoking removeProduct method");
+        Product product = null;
+        if (code == null) {
+            prodRepository.deleteAll();
+            LOG.info("Deleted all products");
+        } else {
+            product = prodRepository.findById(code).orElseThrow(() -> new RuntimeException(prodSvcMessage.productNotFound(code)));
+            prodRepository.delete(product);
+            LOG.info("Deleted product : {}", product.getName());
+        }
+        return prodSvcMessage.productDeleted(product);
     }
 
     public ProductDTO updateProduct(String code, Double price) {

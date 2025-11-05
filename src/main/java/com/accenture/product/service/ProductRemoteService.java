@@ -24,4 +24,10 @@ public class ProductRemoteService {
     public String invokePostInventoryService(List<InventoryDTO> inventories) {
         return restTemplate.postForObject(prodPropConfig.getUrl(), inventories, String.class);
     }
+
+    public void invokeDeleteInventoryService() {
+        LOG.info("Invoking invokeDeleteInventoryService method");
+        restTemplate.delete(prodPropConfig.getUrl());
+        LOG.info("Deleted all inventories successfully");
+    }
 }

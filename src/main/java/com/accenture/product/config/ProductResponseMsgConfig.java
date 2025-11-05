@@ -1,6 +1,7 @@
 package com.accenture.product.config;
 
 import com.accenture.product.config.factory.YamlPropSourceFactory;
+import com.accenture.product.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,8 +20,8 @@ public class ProductResponseMsgConfig {
     private String notFound;
     private String noSuch;
 
-    public String productDeleted(String prodName) {
-        return String.format(deletedMessage, prodName);
+    public String productDeleted(Product product) {
+        return String.format(deletedMessage, product);
     }
 
     public String productNotFound(String code) {

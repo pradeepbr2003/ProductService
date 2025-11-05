@@ -41,7 +41,7 @@ public class ProductController {
     }
 
     @DeleteMapping
-    public String removeProduct(@RequestParam String code) {
+    public String removeProduct(@RequestParam(required = false) String code) {
         return prodService.removeProduct(code);
     }
 }
